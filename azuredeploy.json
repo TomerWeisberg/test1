@@ -50,237 +50,239 @@
     "branch": {
 
       "type": "string"
-    },
 
-    "variables": {
+    }
+  },
 
-      "sku": "Free",
+  "variables": {
 
-      "workerSize": "0",
+    "sku": "Free",
 
-      "siteLocation": "[resourcegroup().location]",
+    "workerSize": "0",
 
-      "hostingPlanName": "SQLAuditLogsToOMSPlan",
+    "siteLocation": "[resourcegroup().location]",
 
-      "siteName": "[concat('SQLAuditLogsToOMSService', uniqueString(subscription().subscriptionId, resourceGroup().id))]",
+    "hostingPlanName": "SQLAuditLogsToOMSPlan",
 
-      "jobCollectionName": "SQLAuditLogsToOMSJob",
+    "siteName": "[concat('SQLAuditLogsToOMSService', uniqueString(subscription().subscriptionId, resourceGroup().id))]",
 
-      "ContainerName": "sqldbauditlogs"
+    "jobCollectionName": "SQLAuditLogsToOMSJob",
+
+    "ContainerName": "sqldbauditlogs"
 
 
-    },
+  },
 
-    "resources": [
+  "resources": [
 
-      {
+    {
 
-        "apiVersion": "2014-11-01",
+      "apiVersion": "2014-11-01",
+
+      "name": "[variables('hostingPlanName')]",
+
+      "type": "Microsoft.Web/serverfarms",
+
+      "location": "[variables('siteLocation')]",
+
+      "properties": {
 
         "name": "[variables('hostingPlanName')]",
 
-        "type": "Microsoft.Web/serverfarms",
+        "sku": "[variables('sku')]",
 
-        "location": "[variables('siteLocation')]",
+        "workerSize": "[variables('workerSize')]",
 
-        "properties": {
+        "numberOfWorkers": 1
 
-          "name": "[variables('hostingPlanName')]",
+      }
 
-          "sku": "[variables('sku')]",
+    },
 
-          "workerSize": "[variables('workerSize')]",
+    {
 
-          "numberOfWorkers": 1
+      "apiVersion": "2014-11-01",
+
+      "name": "[variables('siteName')]",
+
+      "type": "Microsoft.Web/sites",
+
+      "location": "[variables('siteLocation')]",
+
+      "dependsOn": [
+
+        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+
+      ],
+
+      "properties": {
+
+        "serverFarm": "[variables('hostingPlanName')]"
+
+      },
+
+      "resources": [
+
+        {
+
+          "apiVersion": "2014-04-01",
+
+          "name": "web",
+
+          "type": "sourcecontrols",
+
+          "dependsOn": [
+
+            "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
+
+          ],
+
+          "properties": {
+
+            "RepoUrl": "[variables('repoUrl')]",
+
+            "branch": "[variables('branch')]",
+
+            "IsManualIntegration": true
+
+          }
+
+        },
+
+        {
+
+          "apiVersion": "2015-08-01",
+
+          "name": "appsettings",
+
+          "type": "config",
+
+          "dependsOn": [
+
+            "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
+
+          ],
+
+          "properties": {
+
+            "ConnectionString": "[parameters('SQL Auditing - Storage Connection String')]",
+
+            "ContainerName": "[variables('ContainerName')]",
+
+            "omsWorkspaceId": "[parameters('OMS Workspace Id')]",
+
+            "omsWorkspaceKey": "[parameters('OMS Workspace Key')]"
+
+          }
+
+        }
+
+      ]
+
+    },
+
+    {
+
+      "apiVersion": "2014-08-01-preview",
+
+      "name": "[variables('jobCollectionName')]",
+
+      "type": "Microsoft.Scheduler/jobCollections",
+
+      "dependsOn": [
+
+        "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
+
+      ],
+
+      "location": "[variables('siteLocation')]",
+
+      "properties": {
+
+        "sku": {
+
+          "name": "standard"
+
+        },
+
+        "quota": {
+
+          "maxJobCount": "10",
+
+          "maxRecurrence": {
+
+            "Frequency": "minute",
+
+            "interval": "1"
+
+          }
 
         }
 
       },
 
-      {
+      "resources": [
 
-        "apiVersion": "2014-11-01",
+        {
 
-        "name": "[variables('siteName')]",
+          "apiVersion": "2014-08-01-preview",
 
-        "type": "Microsoft.Web/sites",
+          "name": "SQLAuditLogsToOMSJob",
 
-        "location": "[variables('siteLocation')]",
+          "type": "jobs",
 
-        "dependsOn": [
+          "dependsOn": [
 
-          "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+            "[resourceId('Microsoft.Web/sites/config', variables('siteName'), 'appsettings')]",
 
-        ],
+            "[resourceId('Microsoft.Scheduler/jobCollections', variables('jobCollectionName'))]"
 
-        "properties": {
+          ],
 
-          "serverFarm": "[variables('hostingPlanName')]"
+          "properties": {
 
-        },
+            "action": {
 
-        "resources": [
+              "request": {
 
-          {
+                "uri": "[concat(list(resourceId('Microsoft.Web/sites/config', variables('siteName'), 'publishingcredentials'), '2014-06-01').properties.scmUri, '/api/triggeredjobs/SQLAuditLogsToOMSJob/run')]",
 
-            "apiVersion": "2014-04-01",
-
-            "name": "web",
-
-            "type": "sourcecontrols",
-
-            "dependsOn": [
-
-              "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
-
-            ],
-
-            "properties": {
-
-              "RepoUrl": "[variables('repoUrl')]",
-
-              "branch": "[variables('branch')]",
-
-              "IsManualIntegration": true
-
-            }
-
-          },
-
-          {
-
-            "apiVersion": "2015-08-01",
-
-            "name": "appsettings",
-
-            "type": "config",
-
-            "dependsOn": [
-
-              "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
-
-            ],
-
-            "properties": {
-
-              "ConnectionString": "[parameters('SQL Auditing - Storage Connection String')]",
-
-              "ContainerName": "[variables('ContainerName')]",
-
-              "omsWorkspaceId": "[parameters('OMS Workspace Id')]",
-
-              "omsWorkspaceKey": "[parameters('OMS Workspace Key')]"
-
-            }
-
-          }
-
-        ]
-
-      },
-
-      {
-
-        "apiVersion": "2014-08-01-preview",
-
-        "name": "[variables('jobCollectionName')]",
-
-        "type": "Microsoft.Scheduler/jobCollections",
-
-        "dependsOn": [
-
-          "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
-
-        ],
-
-        "location": "[variables('siteLocation')]",
-
-        "properties": {
-
-          "sku": {
-
-            "name": "standard"
-
-          },
-
-          "quota": {
-
-            "maxJobCount": "10",
-
-            "maxRecurrence": {
-
-              "Frequency": "minute",
-
-              "interval": "1"
-
-            }
-
-          }
-
-        },
-
-        "resources": [
-
-          {
-
-            "apiVersion": "2014-08-01-preview",
-
-            "name": "SQLAuditLogsToOMSJob",
-
-            "type": "jobs",
-
-            "dependsOn": [
-
-              "[resourceId('Microsoft.Web/sites/config', variables('siteName'), 'appsettings')]",
-
-              "[resourceId('Microsoft.Scheduler/jobCollections', variables('jobCollectionName'))]"
-
-            ],
-
-            "properties": {
-
-              "action": {
-
-                "request": {
-
-                  "uri": "[concat(list(resourceId('Microsoft.Web/sites/config', variables('siteName'), 'publishingcredentials'), '2014-06-01').properties.scmUri, '/api/triggeredjobs/SQLAuditLogsToOMSJob/run')]",
-
-                  "method": "POST"
-
-                },
-
-                "type": "http",
-
-                "retryPolicy": {
-
-                  "retryType": "Fixed",
-
-                  "retryInterval": "PT1M",
-
-                  "retryCount": 2
-
-                }
+                "method": "POST"
 
               },
 
-              "state": "enabled",
+              "type": "http",
 
-              "recurrence": {
+              "retryPolicy": {
 
-                "interval": "15",
+                "retryType": "Fixed",
 
-                "Frequency": "Minute"
+                "retryInterval": "PT1M",
+
+                "retryCount": 2
 
               }
+
+            },
+
+            "state": "enabled",
+
+            "recurrence": {
+
+              "interval": "15",
+
+              "Frequency": "Minute"
 
             }
 
           }
 
-        ]
+        }
 
-      }
+      ]
 
-    ]
+    }
 
-  }
+  ]
+
+}
