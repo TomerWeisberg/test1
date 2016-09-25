@@ -77,7 +77,7 @@
 
     {
 
-      "apiVersion": "2014-11-01",
+      "apiVersion": "2015-08-01",
 
       "name": "[variables('hostingPlanName')]",
 
@@ -101,7 +101,7 @@
 
     {
 
-      "apiVersion": "2014-11-01",
+      "apiVersion": "2015-08-01",
 
       "name": "[variables('siteName')]",
 
@@ -125,7 +125,7 @@
 
         {
 
-          "apiVersion": "2014-04-01",
+          "apiVersion": "2015-08-01",
 
           "name": "web",
 
@@ -183,7 +183,7 @@
 
     {
 
-      "apiVersion": "2014-08-01-preview",
+      "apiVersion": "2015-08-01",
 
       "name": "[variables('jobCollectionName')]",
 
@@ -225,7 +225,7 @@
 
         {
 
-          "apiVersion": "2014-08-01-preview",
+          "apiVersion": "2015-08-01",
 
           "name": "SQLAuditLogsToOMSJob",
 
