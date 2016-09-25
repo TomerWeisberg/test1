@@ -56,10 +56,6 @@
 
   "variables": {
 
-    "sku": "F1",
-
-    "workerSize": "0",
-
     "siteLocation": "[resourcegroup().location]",
 
     "hostingPlanName": "SQLAuditLogsToOMSPlan",
@@ -84,16 +80,19 @@
       "type": "Microsoft.Web/serverfarms",
 
       "location": "[variables('siteLocation')]",
+      "sku": {
+        "name": "F1",
+        "tier": "Free",
+        "size": "F1",
+        "family": "F",
+        "capacity": 0
+      },
 
       "properties": {
 
         "name": "[variables('hostingPlanName')]",
 
-        "sku": "[variables('sku')]",
-
-        "workerSize": "[variables('workerSize')]",
-
-        "numberOfWorkers": 1
+        "numberOfWorkers": 0
 
       }
 
