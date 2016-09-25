@@ -40,243 +40,247 @@
 
       }
 
-    }
+    },
+    "repoUrl": {
 
-  },
+      "type": "string"
 
-  "variables": {
+    },
 
-    "repoUrl": "https://github.com/Microsoft/Azure-SQL-DB-auditing-OMS-integration",
+    "branch": {
 
-    "branch": "master",
+      "type": "string"
+    },
 
-    "sku": "Free",
+    "variables": {
 
-    "workerSize": "0",
+      "sku": "Free",
 
-    "siteLocation": "[resourcegroup().location]",
+      "workerSize": "0",
 
-    "hostingPlanName": "SQLAuditLogsToOMSPlan",
+      "siteLocation": "[resourcegroup().location]",
 
-    "siteName": "[concat('SQLAuditLogsToOMSService', uniqueString(subscription().subscriptionId, resourceGroup().id))]",
+      "hostingPlanName": "SQLAuditLogsToOMSPlan",
 
-    "jobCollectionName": "SQLAuditLogsToOMSJob",
+      "siteName": "[concat('SQLAuditLogsToOMSService', uniqueString(subscription().subscriptionId, resourceGroup().id))]",
 
-    "ContainerName": "sqldbauditlogs"
+      "jobCollectionName": "SQLAuditLogsToOMSJob",
+
+      "ContainerName": "sqldbauditlogs"
 
 
-  },
+    },
 
-  "resources": [
+    "resources": [
 
-    {
+      {
 
-      "apiVersion": "2014-11-01",
-
-      "name": "[variables('hostingPlanName')]",
-
-      "type": "Microsoft.Web/serverfarms",
-
-      "location": "[variables('siteLocation')]",
-
-      "properties": {
+        "apiVersion": "2014-11-01",
 
         "name": "[variables('hostingPlanName')]",
 
-        "sku": "[variables('sku')]",
+        "type": "Microsoft.Web/serverfarms",
 
-        "workerSize": "[variables('workerSize')]",
+        "location": "[variables('siteLocation')]",
 
-        "numberOfWorkers": 1
+        "properties": {
 
-      }
+          "name": "[variables('hostingPlanName')]",
 
-    },
+          "sku": "[variables('sku')]",
 
-    {
+          "workerSize": "[variables('workerSize')]",
 
-      "apiVersion": "2014-11-01",
-
-      "name": "[variables('siteName')]",
-
-      "type": "Microsoft.Web/sites",
-
-      "location": "[variables('siteLocation')]",
-
-      "dependsOn": [
-
-        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
-
-      ],
-
-      "properties": {
-
-        "serverFarm": "[variables('hostingPlanName')]"
-
-      },
-
-      "resources": [
-
-        {
-
-          "apiVersion": "2014-04-01",
-
-          "name": "web",
-
-          "type": "sourcecontrols",
-
-          "dependsOn": [
-
-            "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
-
-          ],
-
-          "properties": {
-
-            "RepoUrl": "[variables('repoUrl')]",
-
-            "branch": "[variables('branch')]",
-
-            "IsManualIntegration": true
-
-          }
-
-        },
-
-        {
-
-          "apiVersion": "2015-08-01",
-
-          "name": "appsettings",
-
-          "type": "config",
-
-          "dependsOn": [
-
-            "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
-
-          ],
-
-          "properties": {
-
-            "ConnectionString": "[parameters('SQL Auditing - Storage Connection String')]",
-
-            "ContainerName": "[variables('ContainerName')]",
-
-            "omsWorkspaceId": "[parameters('OMS Workspace Id')]",
-
-            "omsWorkspaceKey": "[parameters('OMS Workspace Key')]"
-
-          }
-
-        }
-
-      ]
-
-    },
-
-    {
-
-      "apiVersion": "2014-08-01-preview",
-
-      "name": "[variables('jobCollectionName')]",
-
-      "type": "Microsoft.Scheduler/jobCollections",
-
-      "dependsOn": [
-
-        "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
-
-      ],
-
-      "location": "[variables('siteLocation')]",
-
-      "properties": {
-
-        "sku": {
-
-          "name": "standard"
-
-        },
-
-        "quota": {
-
-          "maxJobCount": "10",
-
-          "maxRecurrence": {
-
-            "Frequency": "minute",
-
-            "interval": "1"
-
-          }
+          "numberOfWorkers": 1
 
         }
 
       },
 
-      "resources": [
+      {
 
-        {
+        "apiVersion": "2014-11-01",
 
-          "apiVersion": "2014-08-01-preview",
+        "name": "[variables('siteName')]",
 
-          "name": "SQLAuditLogsToOMSJob",
+        "type": "Microsoft.Web/sites",
 
-          "type": "jobs",
+        "location": "[variables('siteLocation')]",
 
-          "dependsOn": [
+        "dependsOn": [
 
-            "[resourceId('Microsoft.Web/sites/config', variables('siteName'), 'appsettings')]",
+          "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
 
-            "[resourceId('Microsoft.Scheduler/jobCollections', variables('jobCollectionName'))]"
+        ],
 
-          ],
+        "properties": {
 
-          "properties": {
+          "serverFarm": "[variables('hostingPlanName')]"
 
-            "action": {
+        },
 
-              "request": {
+        "resources": [
 
-                "uri": "[concat(list(resourceId('Microsoft.Web/sites/config', variables('siteName'), 'publishingcredentials'), '2014-06-01').properties.scmUri, '/api/triggeredjobs/SQLAuditLogsToOMSJob/run')]",
+          {
 
-                "method": "POST"
+            "apiVersion": "2014-04-01",
 
-              },
+            "name": "web",
 
-              "type": "http",
+            "type": "sourcecontrols",
 
-              "retryPolicy": {
+            "dependsOn": [
 
-                "retryType": "Fixed",
+              "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
 
-                "retryInterval": "PT1M",
+            ],
 
-                "retryCount": 2
+            "properties": {
 
-              }
+              "RepoUrl": "[variables('repoUrl')]",
 
-            },
+              "branch": "[variables('branch')]",
 
-            "state": "enabled",
+              "IsManualIntegration": true
 
-            "recurrence": {
+            }
 
-              "interval": "15",
+          },
 
-              "Frequency": "Minute"
+          {
+
+            "apiVersion": "2015-08-01",
+
+            "name": "appsettings",
+
+            "type": "config",
+
+            "dependsOn": [
+
+              "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
+
+            ],
+
+            "properties": {
+
+              "ConnectionString": "[parameters('SQL Auditing - Storage Connection String')]",
+
+              "ContainerName": "[variables('ContainerName')]",
+
+              "omsWorkspaceId": "[parameters('OMS Workspace Id')]",
+
+              "omsWorkspaceKey": "[parameters('OMS Workspace Key')]"
 
             }
 
           }
 
-        }
+        ]
 
-      ]
+      },
 
-    }
+      {
 
-  ]
+        "apiVersion": "2014-08-01-preview",
 
-}
+        "name": "[variables('jobCollectionName')]",
+
+        "type": "Microsoft.Scheduler/jobCollections",
+
+        "dependsOn": [
+
+          "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
+
+        ],
+
+        "location": "[variables('siteLocation')]",
+
+        "properties": {
+
+          "sku": {
+
+            "name": "standard"
+
+          },
+
+          "quota": {
+
+            "maxJobCount": "10",
+
+            "maxRecurrence": {
+
+              "Frequency": "minute",
+
+              "interval": "1"
+
+            }
+
+          }
+
+        },
+
+        "resources": [
+
+          {
+
+            "apiVersion": "2014-08-01-preview",
+
+            "name": "SQLAuditLogsToOMSJob",
+
+            "type": "jobs",
+
+            "dependsOn": [
+
+              "[resourceId('Microsoft.Web/sites/config', variables('siteName'), 'appsettings')]",
+
+              "[resourceId('Microsoft.Scheduler/jobCollections', variables('jobCollectionName'))]"
+
+            ],
+
+            "properties": {
+
+              "action": {
+
+                "request": {
+
+                  "uri": "[concat(list(resourceId('Microsoft.Web/sites/config', variables('siteName'), 'publishingcredentials'), '2014-06-01').properties.scmUri, '/api/triggeredjobs/SQLAuditLogsToOMSJob/run')]",
+
+                  "method": "POST"
+
+                },
+
+                "type": "http",
+
+                "retryPolicy": {
+
+                  "retryType": "Fixed",
+
+                  "retryInterval": "PT1M",
+
+                  "retryCount": 2
+
+                }
+
+              },
+
+              "state": "enabled",
+
+              "recurrence": {
+
+                "interval": "15",
+
+                "Frequency": "Minute"
+
+              }
+
+            }
+
+          }
+
+        ]
+
+      }
+
+    ]
+
+  }
