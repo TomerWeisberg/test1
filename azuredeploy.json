@@ -158,7 +158,8 @@
 
           "dependsOn": [
 
-            "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
+            "[resourceId('Microsoft.Web/Sites', variables('siteName'))]",
+            "[resourceId('Microsoft.Web/sites/sourcecontrols', variables('siteName'), 'web')]"
 
           ],
 
@@ -190,7 +191,8 @@
 
       "dependsOn": [
 
-        "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
+        "[resourceId('Microsoft.Web/Sites', variables('siteName'))]",
+        "[resourceId('Microsoft.Web/sites/sourcecontrols', variables('siteName'), 'web')]"
 
       ],
 
@@ -233,6 +235,7 @@
           "dependsOn": [
 
             "[resourceId('Microsoft.Web/sites/config', variables('siteName'), 'appsettings')]",
+            "[resourceId('Microsoft.Web/sites/sourcecontrols', variables('siteName'), 'web')]",
 
             "[resourceId('Microsoft.Scheduler/jobCollections', variables('jobCollectionName'))]"
 
