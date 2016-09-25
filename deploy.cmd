@@ -68,7 +68,7 @@ SET MSBUILD_PATH=%ProgramFiles(x86)%\MSBuild\14.0\Bin\MSBuild.exe
 echo Handling .NET Web Application deployment.
 
 :: 1. Restore NuGet packages
-IF /I "ContosoClinic.sln" NEQ "" (
+IF /I "XEL2OMS.sln" NEQ "" (
   call :ExecuteCmd nuget restore "%DEPLOYMENT_SOURCE%\src\XEL2OMS\XEL2OMS.sln"
   IF !ERRORLEVEL! NEQ 0 goto error
 )
