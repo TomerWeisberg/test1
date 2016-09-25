@@ -116,7 +116,7 @@
 
       "properties": {
 
-        "serverFarm": "[variables('hostingPlanName')]"
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
 
       },
 
