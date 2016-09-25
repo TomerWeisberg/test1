@@ -182,7 +182,7 @@
 
     {
 
-      "apiVersion": "2015-08-01",
+      "apiVersion": "2016-03-01",
 
       "name": "[variables('jobCollectionName')]",
 
@@ -224,7 +224,7 @@
 
         {
 
-          "apiVersion": "2015-08-01",
+          "apiVersion": "2016-03-01",
 
           "name": "SQLAuditLogsToOMSJob",
 
