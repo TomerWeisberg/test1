@@ -58,7 +58,7 @@
 
     "hostingPlanName": "SQLAuditLogsToOMSPlan",
 
-    "siteName": "[concat('SQLAuditLogsToOMSService', uniqueString(subscription().subscriptionId))]",
+    "siteName": "[concat('SQLAuditLogsToOMSService', uniqueString(subscription().subscriptionId, resourceGroup().id))]",
 
     "jobCollectionName": "SQLAuditLogsToOMSJob",
 
