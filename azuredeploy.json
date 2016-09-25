@@ -56,7 +56,7 @@
 
   "variables": {
 
-    "sku": "Free",
+    "sku": "F1",
 
     "workerSize": "0",
 
@@ -201,7 +201,7 @@
 
         "sku": {
 
-          "name": "S1"
+          "name": "standard"
 
         },
 
