@@ -1,4 +1,4 @@
 [config]
 SCM_TRACE_LEVEL=4
-DEPLOYMENT_TARGET=%DEPLOYMENT_TARGET%\App_Data\jobs\triggered\SQLAuditLogsToOMSJob
+DEPLOYMENT_TARGET=%ARTIFACTS%\wwwroot\App_Data\jobs\triggered\SQLAuditLogsToOMSJob
 command=deploy.cmd 
