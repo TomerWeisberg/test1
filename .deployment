@@ -1,4 +1,5 @@
 [config]
 SCM_TRACE_LEVEL=4
 DEPLOYMENT_TARGET=%WEBROOT_PATH%\App_Data\jobs\triggered\SQLAuditLogsToOMSJob
-command=deploy.cmd 
+SCM_BUILD_ARGS=/verbosity:d
+command=deploy.cmd
