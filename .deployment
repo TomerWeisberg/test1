@@ -1,7 +1,7 @@
 [config]
 SCM_TRACE_LEVEL=4
 DEPLOYMENT_TARGET=%WEBROOT_PATH%\App_Data\jobs\triggered\SQLAuditLogsToOMSJob
-SCM_BUILD_ARGS=/verbosity:d
+SCM_BUILD_ARGS=/p:Platform="x64"
 IN_PLACE_DEPLOYMENT=1
 POST_DEPLOYMENT_ACTION=xcopy /s src\XEL2OMS\bin\release\* %WEBROOT_PATH%\App_Data\jobs\triggered\SQLAuditLogsToOMSJob\*
 command=deploy.cmd

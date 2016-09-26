@@ -21,7 +21,6 @@ namespace XEL2OMS
     public static class Program
     {
         private static TraceSource s_consoleTracer = new TraceSource("OMS");
-        private const string path = "D:\\home\\site\\wwwroot\\";
         private static int totalLogs = 0;
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Should catch any exception")]
@@ -51,7 +50,7 @@ namespace XEL2OMS
 
         private static async Task<int> SendBlobToOMS(CloudPageBlob blob, int eventNumber, OMSIngestionApi oms)
         {
-            string fileName = path + Path.GetRandomFileName() + ".xel";
+            string fileName = Path.Combine(Environment.GetEnvironmentVariable("WEBROOT_PATH"), Path.GetRandomFileName() + ".xel");
             try
             {
                 await blob.DownloadToFileAsync(fileName, FileMode.OpenOrCreate);
@@ -72,6 +71,7 @@ namespace XEL2OMS
             {
                 File.Delete(fileName);
             }
+            s_consoleTracer.TraceEvent(TraceEventType.Information, 0, "Done processing: {0}", blob.Uri);
             return eventNumber;
         }
 
@@ -104,6 +104,8 @@ namespace XEL2OMS
                 foreach (var blob in pageBlobs)
                 {
                     string blobName = new FileInfo(blob.Name).Name;
+                    s_consoleTracer.TraceEvent(TraceEventType.Information, 0, "processing: {0}{1}", dateFolder.Uri, blobName);
+
                     if (datesCompareResult == 0)
                     {
                         int blobsCompareResult = string.Compare(blobName, subfolderState.BlobName, StringComparison.OrdinalIgnoreCase);
@@ -200,7 +202,7 @@ namespace XEL2OMS
 
             if (CloudStorageAccount.TryParse(connectionString, out storageAccount) == false)
             {
-                s_consoleTracer.TraceEvent(TraceEventType.Error, 0, "Connection string can't be parsed");
+                s_consoleTracer.TraceEvent(TraceEventType.Error, 0, "Connection string can't be parsed: {0}", connectionString);
                 return;
             }
             try
@@ -208,7 +210,7 @@ namespace XEL2OMS
                 CloudBlobClient BlobClient = storageAccount.CreateCloudBlobClient();
                 CloudBlobContainer container = BlobClient.GetContainerReference(containerName);
 
-                var stateFileName = Path.Combine(path, "states.json");
+                var stateFileName = Path.Combine(Environment.GetEnvironmentVariable("WEBROOT_PATH"), "states.json");
 
                 StateDictionary statesList = GetStates(stateFileName);
 
